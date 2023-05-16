@@ -1,0 +1,9 @@
+{
+  "name" : "sdl-opengl-with-glad-demo",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "ed8fb07a8bd19568c8594c6f1a04955242f82d35",
+  "dependencies" : [ {
+    "name" : "sdl2",
+    "version>=" : "2.26.5"
+  } ]
+}
