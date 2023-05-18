@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(${PROJECT_SOURCE_DIR}/glad/include)
 
-add_executable(SDL_Opengl_With_Glad_Demo main.cpp glad/src/gl.c)
+add_executable(SDL_Opengl_With_Glad_Demo main.cpp glad/src/gl.c ShaderProgram.cpp ShaderProgram.h VertexArray.cpp VertexArray.h)
 
 find_package(SDL2 CONFIG REQUIRED)
 target_link_libraries(
