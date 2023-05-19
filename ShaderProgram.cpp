@@ -25,6 +25,16 @@ void ShaderProgram::setUniform(const std::string &name, bool value) const {
     glUniform1i(glGetUniformLocation(id, name.c_str()), int(value));
 }
 
+void ShaderProgram::setUniform(const std::string &name, int value) const {
+    use();
+    glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+}
+
+void ShaderProgram::setUniform(const std::string &name, float value) const {
+    use();
+    glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+}
+
 std::string ShaderProgram::loadFileIntoString(const std::string &fileName) {
     std::ifstream inStream(fileName);
     std::stringstream buffer;

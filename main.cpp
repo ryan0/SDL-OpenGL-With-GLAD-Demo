@@ -1,9 +1,12 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include <glad/gl.h>
 #include <SDL.h>
 #include <iostream>
 #include <sstream>
 #include "ShaderProgram.h"
 #include "VertexArray.h"
+#include "Texture.h"
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -32,35 +35,32 @@ int main(int argc, char* argv[]) {
     std::cout<<"Version:   "<<glGetString(GL_VERSION)<<std::endl;
 
     ShaderProgram shaderProgram = ShaderProgram("../shaders/vert.glsl", "../shaders/frag.glsl");
-    ShaderProgram shaderProgram2 = ShaderProgram("../shaders/vert2.glsl", "../shaders/frag-grad.glsl");
 
     //Define vertices and load into created array buffer object
     float vertices[] = {
-            0.5f, 0.5f, 0.0f,  // top right
-            0.5f, -0.5f, 0.0f,  // bottom right
-            0.2f, -0.5f, 0.0f,  // bottom left
-            0.2f, 0.5f, 0.0f   // top left
+            -0.5f, -0.5f, 0.0f,     0.0f, 0.0f,  // bottom left
+            -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, // top Left
+             0.5f,  0.5f, 0.0f,     1.0f, 1.0f, // top Right
+             0.5f, -0.5f, 0.0f,     1.0f, 0.0f,  // bottom right
     };
     int indices[] = {
-            0, 1, 3,   // first triangle
-            1, 2, 3    // second triangle
+            0, 1, 2,   // First triangle
+            0, 2, 3,   // Second triangle
     };
     VertexArray vertArray1{vertices, sizeof(vertices), indices, sizeof(indices)};
-    vertArray1.attribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    vertArray1.attribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    vertArray1.attribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-    float vertices2[] = {
-            -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // top right
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom right
-            -0.2f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-            -0.2f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f // top left
-    };
-    int indices2[] = {
-            0, 1, 3,   // first triangle
-            1, 2, 3    // second triangle
-    };
-    VertexArray vertArray{vertices2, sizeof(vertices2), indices2, sizeof(indices2)};
-    vertArray.attribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-    vertArray.attribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    Texture tex1 = Texture("../assets/container.jpg");
+    Texture tex2 = Texture("../assets/awesomeface.png", true, GL_RGBA);
+
+    float mixVal = 0.2f;
 
     bool running = true;
     SDL_Event event;
@@ -69,17 +69,24 @@ int main(int argc, char* argv[]) {
             if(event.type == SDL_QUIT) {
                 running = false;
             }
+            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_w) {
+                mixVal += 0.1f;
+            }
+            if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_s) {
+                mixVal -= 0.1f;
+            }
         }
         glClearColor(0.0f, 0.35f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         shaderProgram.use();
+        tex1.bind(GL_TEXTURE0);
+        shaderProgram.setUniform("texture1", 0);
+        tex2.bind(GL_TEXTURE1);
+        shaderProgram.setUniform("texture2", 1);
+        shaderProgram.setUniform("mixVal", mixVal);
         vertArray1.bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        shaderProgram2.use();
-        vertArray.bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         SDL_GL_SwapWindow(window);
         SDL_Delay(10);
