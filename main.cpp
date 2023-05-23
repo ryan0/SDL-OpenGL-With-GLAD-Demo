@@ -1,6 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glad/gl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <SDL.h>
 #include <iostream>
 #include <sstream>
@@ -18,7 +20,7 @@ int main(int argc, char* argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 
     //Define screen dimensions, create SDL window and associated OpenGL context
-    const int SCREEN_WIDTH = 1920;
+    const int SCREEN_WIDTH = 1200;
     const int SCREEN_HEIGHT = 1080;
     SDL_Window* window;
     window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL );
@@ -61,6 +63,7 @@ int main(int argc, char* argv[]) {
     Texture tex2 = Texture("../assets/awesomeface.png", true, GL_RGBA);
 
     float mixVal = 0.2f;
+    float rot = 0.0f;
 
     bool running = true;
     SDL_Event event;
@@ -79,12 +82,29 @@ int main(int argc, char* argv[]) {
         glClearColor(0.0f, 0.35f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        rot += .4f;
+
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+        trans = glm::rotate(trans, glm::radians(rot), glm::vec3(0.0, 0.0, 1.0));
+
+        shaderProgram.setUniformMat4fv("transform", trans);
+
         shaderProgram.use();
         tex1.bind(GL_TEXTURE0);
-        shaderProgram.setUniform("texture1", 0);
+        shaderProgram.setUniform1i("texture1", 0);
         tex2.bind(GL_TEXTURE1);
-        shaderProgram.setUniform("texture2", 1);
-        shaderProgram.setUniform("mixVal", mixVal);
+        shaderProgram.setUniform1i("texture2", 1);
+        shaderProgram.setUniform1f("mixVal", mixVal);
+        vertArray1.bind();
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+        trans = glm::rotate(trans, glm::radians(-rot), glm::vec3(0.0, 0.0, 1.0));
+        shaderProgram.setUniformMat4fv("transform", trans);
         vertArray1.bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 #include "ShaderProgram.h"
 
 ShaderProgram::ShaderProgram(const std::string &vertexPath, const std::string &fragmentPath) {
@@ -20,19 +21,25 @@ void ShaderProgram::use() const {
     glUseProgram(id);
 }
 
-void ShaderProgram::setUniform(const std::string &name, bool value) const {
+void ShaderProgram::setUniform1b(const std::string &name, bool value) const {
     use();
     glUniform1i(glGetUniformLocation(id, name.c_str()), int(value));
 }
 
-void ShaderProgram::setUniform(const std::string &name, int value) const {
+void ShaderProgram::setUniform1i(const std::string &name, int value) const {
     use();
     glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
 
-void ShaderProgram::setUniform(const std::string &name, float value) const {
+void ShaderProgram::setUniform1f(const std::string &name, float value) const {
     use();
     glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+}
+
+void ShaderProgram::setUniformMat4fv(const std::string &name, const glm::mat4 &mat4) const {
+    use();
+    GLint location = glGetUniformLocation(id, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat4));
 }
 
 std::string ShaderProgram::loadFileIntoString(const std::string &fileName) {
